@@ -1,0 +1,4 @@
+.orders-page { padding-top: 60rpx; }
+.empty { padding: 70rpx 36rpx; text-align: center; }
+.empty-title { margin-bottom: 14rpx; font-size: 34rpx; font-weight: 900; }
+.empty-btn { margin-top: 28rpx; }

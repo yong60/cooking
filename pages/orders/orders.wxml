@@ -1,0 +1,1 @@
+<view class="container orders-page"><view class="empty card"><view class="empty-title">{{t.title}}</view><view class="muted">{{t.hint}}</view><button class="primary-btn empty-btn" bindtap="goHome">{{t.home}}</button><button class="ghost-btn empty-btn" bindtap="goMenu">{{t.menu}}</button></view></view>

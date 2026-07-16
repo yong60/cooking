@@ -1,0 +1,55 @@
+<view class="container combo-page">
+  <view class="hero card">
+    <view class="hero-copy">
+      <view class="title">{{t.title}}</view>
+      <view class="muted">{{t.subtitle}}</view>
+    </view>
+    <button wx:if="{{loggedIn}}" class="ghost-btn" bindtap="goIngredients">{{t.pick}}</button>
+  </view>
+
+  <view wx:if="{{!loggedIn}}" class="empty-card login-empty card">
+    <view class="empty-icon">🍽️</view>
+    <view class="empty-title">{{t.loginPanelTitle}}</view>
+    <view class="muted empty-hint">{{t.loginPanelHint}}</view>
+    <button class="primary-btn empty-btn" bindtap="goLogin">{{t.goLogin}}</button>
+  </view>
+
+  <block wx:elif="{{!selectedIngredients.length}}">
+    <view class="empty-card card">
+      <view class="empty-icon">🍽️</view>
+      <view class="empty-title">{{t.emptyTitle}}</view>
+      <view class="muted">{{t.emptyHint}}</view>
+      <button class="primary-btn empty-btn" bindtap="goIngredients">{{t.pick}}</button>
+    </view>
+  </block>
+
+  <block wx:else>
+    <view class="section-title"><text>{{t.selected}}</text><text class="muted">{{selectedIngredients.length}} {{t.kind}}</text></view>
+    <view class="selected-list">
+      <view wx:for="{{selectedIngredients}}" wx:key="id" class="chip">
+        <text class="chip-text">{{item.emoji}} {{item.name}}</text>
+        <text class="chip-close" data-id="{{item.id}}" bindtap="removeIngredient">×</text>
+      </view>
+    </view>
+    <view class="section-title"><text>{{t.options}}</text></view>
+    <view class="card option-card">
+      <view class="option-title">{{t.howMany}}</view>
+      <view class="count-row">
+        <button class="count-btn {{dishCount === 1 ? 'active' : ''}}" data-count="1" bindtap="chooseCount">{{t.one}}</button>
+        <button class="count-btn {{dishCount === 2 ? 'active' : ''}}" data-count="2" bindtap="chooseCount">{{t.two}}</button>
+        <button class="count-btn {{dishCount === 3 ? 'active' : ''}}" data-count="3" bindtap="chooseCount">{{t.three}}</button>
+      </view>
+      <view class="soup-row">
+        <view class="soup-copy"><view class="option-title">{{t.withSoup}}</view><view class="muted">{{t.soupHint}}</view></view>
+        <switch checked="{{withSoup}}" bindchange="toggleSoup" color="#ff5a1f" />
+      </view>
+      <button class="primary-btn generate-btn" bindtap="generate">{{t.generate}}</button>
+    </view>
+    <view class="section-title" wx:if="{{recommendations.length}}"><text>{{t.result}}</text><text class="muted">{{source}}</text></view>
+    <view wx:for="{{recommendations}}" wx:key="id" class="recommend-card card">
+      <view class="cover">{{item.cover}}</view>
+      <view class="main"><view class="name">{{item.name}}</view><view class="muted">{{item.desc}}</view><view class="tags"><text wx:for="{{item.tags}}" wx:key="*this" class="badge">{{item}}</text></view></view>
+      <button class="ghost-btn add-small" data-id="{{item.id}}" bindtap="addToCart">{{t.add}}</button>
+    </view>
+  </block>
+</view>

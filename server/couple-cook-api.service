@@ -1,0 +1,16 @@
+[Unit]
+Description=Couple Cook API
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/couple-cook-api
+EnvironmentFile=-/opt/couple-cook-api/.env
+ExecStart=/usr/bin/python3 /opt/couple-cook-api/app.py
+Restart=always
+RestartSec=3
+User=root
+Group=root
+
+[Install]
+WantedBy=multi-user.target

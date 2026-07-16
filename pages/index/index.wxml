@@ -1,0 +1,22 @@
+<view class="container home-page">
+  <view class="hero card">
+    <view class="hero-main"><view class="hero-copy"><view class="hello">{{appInfo.coupleName}}</view><view class="title">{{appInfo.name}}</view><view class="slogan">{{appInfo.slogan}}</view></view><view class="logo {{logoFlipped ? 'logo-flipped' : ''}} {{logoAnimClass}}" bindtap="logoTap">{{t.logoIcon}}</view></view>
+    <view class="login-card" wx:if="{{!loggedIn}}"><view class="login-copy"><view class="login-title">{{t.loginRequired}}</view><view class="muted login-hint">{{t.loginHint}}</view></view><button class="login-btn" bindtap="login">{{t.loginBtn}}</button></view>
+    <view class="user-line" wx:else><image wx:if="{{user.avatarUrl}}" class="avatar" src="{{user.avatarUrl}}" mode="aspectFill" /><view wx:else class="avatar text-avatar">U</view><view class="login-copy"><view class="login-title">{{user.nickName || t.wechatUser}}</view><view class="muted login-hint">{{t.backendReady}}</view></view></view>
+  </view>
+  <view class="action-grid">
+    <button class="action-card action-menu card" bindtap="goMenu">
+      <view class="action-icon-wrap"><view class="action-icon">{{t.menuIcon}}</view></view>
+      <view class="action-content"><view class="action-title">{{t.pickRecipes}}</view><view class="muted action-desc">{{t.pickRecipesDesc}}</view><view class="badge action-badge">{{t.picked}} {{cartCount}} {{t.portion}}</view></view>
+      <view class="action-arrow"></view>
+    </button>
+    <button class="action-card action-ingredient card" bindtap="goIngredients">
+      <view class="action-icon-wrap"><view class="action-icon">{{t.ingredientIcon}}</view></view>
+      <view class="action-content"><view class="action-title">{{t.pickIngredients}}</view><view class="muted action-desc">{{t.pickIngredientsDesc}}</view><view class="badge action-badge">{{t.selected}} {{selectedCount}} {{t.kind}}</view></view>
+      <view class="action-arrow"></view>
+    </button>
+  </view>
+  <view class="section-title"><text>{{t.current}}</text><button class="ghost-btn" bindtap="goCart">{{t.viewCart}}</button></view>
+  <view class="summary card"><view class="summary-item"><text>{{t.cart}}</text><text>{{cartCount}} {{t.portion}}</text></view><view class="summary-item"><text>{{t.ingredients}}</text><text>{{selectedCount}} {{t.kind}}</text></view><view class="tip">{{t.tip}}</view></view>
+</view>
+

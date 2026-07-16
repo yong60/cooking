@@ -1,0 +1,19 @@
+# WeChat DevTools / local
+node_modules/
+npm/
+dist/
+.DS_Store
+*.log
+*.tmp
+.project.private.config.json
+
+# Local backend runtime data
+server/data/*.json
+
+# Python cache
+__pycache__/
+*.pyc
+project.private.config.json
+server/__pycache__/
+.env
+server/.env

@@ -1,0 +1,56 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/menu/menu",
+    "pages/ingredients/ingredients",
+    "pages/cart/cart",
+    "pages/combo/combo",
+    "pages/admin/admin",
+    "pages/profile/profile",
+    "pages/orders/orders"
+  ],
+  "window": {
+    "navigationBarTitleText": "\u80e1\u95f9\u53a8\u623f",
+    "navigationBarBackgroundColor": "#fff7ef",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#fff7ef",
+    "backgroundTextStyle": "dark"
+  },
+  "tabBar": {
+    "custom": true,
+    "color": "#9a918b",
+    "selectedColor": "#ff5a1f",
+    "backgroundColor": "#fffdf9",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "\u9996\u9875",
+        "iconPath": "assets/tabbar/home.png",
+        "selectedIconPath": "assets/tabbar/home-active.png"
+      },
+      {
+        "pagePath": "pages/combo/combo",
+        "text": "\u7ec4\u5408",
+        "iconPath": "assets/tabbar/combo.png",
+        "selectedIconPath": "assets/tabbar/combo-active.png"
+      },
+      {
+        "pagePath": "pages/admin/admin",
+        "text": "\u7ba1\u7406",
+        "iconPath": "assets/tabbar/admin.png",
+        "selectedIconPath": "assets/tabbar/admin-active.png"
+      },
+      {
+        "pagePath": "pages/profile/profile",
+        "text": "\u8bbe\u7f6e",
+        "iconPath": "assets/tabbar/profile.png",
+        "selectedIconPath": "assets/tabbar/profile-active.png"
+      }
+    ]
+  },
+  "style": "v2",
+  "componentFramework": "glass-easel",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}

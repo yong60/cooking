@@ -1,0 +1,30 @@
+<view class="container profile-page">
+  <view class="user-card card {{!loggedIn ? 'login-mode' : ''}}">
+    <image wx:if="{{user.avatarUrl}}" class="avatar" src="{{user.avatarUrl}}" mode="aspectFill" />
+    <view wx:else class="avatar text-avatar">H</view>
+    <view class="user-info"><view class="user-name">{{loggedIn ? (user.nickName || t.wechatUser) : t.notLogin}}</view><view class="muted">{{loggedIn ? t.joined : t.loginFirst}}</view><view class="profile-subtitle">{{t.subtitle}}</view></view>
+    <button wx:if="{{!loggedIn}}" class="login-btn" bindtap="login">{{t.login}}</button>
+  </view>
+  <view class="stats card"><view class="stat-item"><view class="stat-num">{{cartCount}}</view><view class="muted">{{t.recipes}}</view></view><view class="stat-item"><view class="stat-num">{{selectedCount}}</view><view class="muted">{{t.ingredients}}</view></view></view>
+  <view wx:if="{{loggedIn}}" class="section-title"><text>{{t.profileTitle}}</text></view>
+  <view wx:if="{{loggedIn}}" class="card edit-card">
+    <view class="avatar-edit"><image wx:if="{{profileForm.avatarUrl}}" class="edit-avatar" src="{{profileForm.avatarUrl}}" mode="aspectFill" /><view wx:else class="edit-avatar text-avatar">H</view><button class="ghost-btn avatar-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">{{t.chooseAvatar}}</button></view>
+    <input class="input" type="nickname" placeholder="{{t.nickPlaceholder}}" value="{{profileForm.nickName}}" bindinput="onNickInput" />
+    <button class="primary-btn save-profile" bindtap="saveProfile">{{t.saveProfile}}</button>
+  </view>
+  <view wx:if="{{loggedIn}}" class="section-title"><text>{{t.bindTitle}}</text></view>
+  <view wx:if="{{loggedIn && sharedPartnerId}}" class="card join-card" bindtap="joinSharedPartner">
+    <view class="join-title">{{t.joinInvite}}</view>
+    <view class="muted">{{t.joinHint}}</view>
+    <view class="join-btn">{{t.join}}</view>
+  </view>
+  <view wx:if="{{loggedIn}}" class="card bind-card">
+    <view class="mode-line"><text>{{user.isBound ? t.coupleMode : t.singleMode}}</text></view>
+    <view class="id-box" bindtap="copyUserId"><view><view>{{t.myCode}}</view><view class="muted">{{t.copyId}}</view></view><text class="id-text">{{user.id}}</text></view>
+    <input class="input" placeholder="{{t.partnerPlaceholder}}" value="{{partnerId}}" bindinput="onPartnerInput" />
+    <view class="bind-actions"><button class="primary-btn bind-btn" bindtap="bindPartner">{{t.bind}}</button><button class="ghost-btn share-btn" open-type="share">{{t.shareInvite}}</button></view>
+    <button class="ghost-btn unbind-btn" bindtap="unbindPartner">{{t.unbind}}</button>
+  </view>
+  <view class="section-title"><text>{{t.actions}}</text></view>
+  <view class="card action-list"><button class="action-row" bindtap="clearCart"><text>{{t.clearCartIcon}}</text><view class="row-arrow"></view></button><button class="action-row" bindtap="clearIngredients"><text>{{t.clearIngredientsIcon}}</text><view class="row-arrow"></view></button><button class="action-row" bindtap="testNotify"><text>{{t.testPush}}</text><view class="row-arrow"></view></button></view>
+</view>

@@ -1,0 +1,10 @@
+{
+  "name": "couple-cook-api",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Couple Cook API MVP",
+  "main": "src/server.js",
+  "scripts": { "start": "node src/server.js" },
+  "engines": { "node": ">=18" },
+  "dependencies": {}
+}

@@ -1,0 +1,20 @@
+<view class="custom-tabbar">
+  <view
+    wx:for="{{list}}"
+    wx:key="pagePath"
+    class="tabbar-item {{selected == index ? 'active' : ''}}"
+    data-index="{{index}}"
+    bindtap="switchTab"
+  >
+    <image
+      wx:if="{{!item.iconBroken}}"
+      class="tabbar-icon"
+      src="{{selected == index ? item.selectedIconPath : item.iconPath}}"
+      mode="aspectFit"
+      data-index="{{index}}"
+      binderror="iconError"
+    />
+    <view wx:else class="tabbar-icon tabbar-fallback" style="color: {{selected == index ? selectedColor : color}}">{{item.fallback}}</view>
+    <view class="tabbar-text" style="color: {{selected == index ? selectedColor : color}}">{{item.text}}</view>
+  </view>
+</view>

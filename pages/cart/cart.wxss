@@ -1,0 +1,23 @@
+.cart-page { padding-bottom: 164rpx; }
+.head { display: flex; align-items: flex-start; justify-content: space-between; gap: 20rpx; padding: 32rpx; background: linear-gradient(145deg,#fff,#fff3e8); }
+.head-copy { flex: 1; min-width: 0; }
+.count-badge { flex-shrink: 0; }
+.title { font-size: 36rpx; line-height: 1.22; font-weight: 950; }
+.list-card { padding: 8rpx 20rpx; }
+.cart-item { display: flex; align-items: center; gap: 16rpx; padding: 22rpx 0; border-bottom: 1rpx solid #f4eee8; }
+.cart-item:last-child { border-bottom: 0; }
+.cover { width: 88rpx; height: 88rpx; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border-radius: 24rpx; color:#ff5a1f; background: linear-gradient(145deg,#fff7ee,#ffe6d1); font-size: 32rpx; font-weight:950; }
+.item-main { flex: 1; min-width: 0; }
+.item-name { font-size: 30rpx; line-height: 1.25; font-weight: 900; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.desc { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.counter { display: inline-flex; align-items: center; gap: 8rpx; flex-shrink: 0; padding: 6rpx; border-radius: 24rpx; background: #fff7ef; }
+.counter-btn { width: 44rpx; height: 44rpx; display: flex; align-items: center; justify-content: center; flex: 0 0 44rpx; box-sizing: border-box; padding: 0; border-radius: 15rpx; font-size: 30rpx; line-height: 44rpx; font-weight: 950; text-align: center; }
+.counter-btn.plus { color: #fff; background: linear-gradient(135deg,#ff9b3d,#ff5725); box-shadow: 0 8rpx 18rpx rgba(255,90,31,.22); }
+.counter-btn.minus { color: #ff5a1f; background: #fff; box-shadow: inset 0 0 0 2rpx #ffd9c3; }
+.quantity { min-width: 30rpx; color: #ff5a1f; text-align: center; font-size: 26rpx; font-weight: 950; }
+.remark { width: 100%; min-height: 180rpx; box-sizing: border-box; padding: 24rpx; font-size: 28rpx; }
+.submit-bar { position: fixed; left: 24rpx; right: 24rpx; bottom: 28rpx; display: flex; align-items: center; justify-content: space-between; gap: 18rpx; padding: 18rpx 20rpx; border-radius: 32rpx; background: #fff; box-shadow: 0 16rpx 40rpx rgba(0,0,0,.14); }
+.submit-copy { flex: 1; min-width: 0; }
+.submit-title { color: #ff5a1f; font-size: 34rpx; font-weight: 950; white-space: nowrap; }
+.submit-btn { width: 218rpx; flex-shrink: 0; white-space: nowrap; }
+.one-line { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
