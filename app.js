@@ -93,8 +93,9 @@ App({
       this.globalData.recipes = recipeRes.recipes || mock.recipes
       this.globalData.ingredients = ingredientRes.ingredients || mock.ingredients
     } catch (err) {
-      this.globalData.recipes = mock.recipes
-      this.globalData.ingredients = mock.ingredients
+      const localCatalog = wx.getStorageSync('localCatalog') || {}
+      this.globalData.recipes = localCatalog.recipes || mock.recipes
+      this.globalData.ingredients = localCatalog.ingredients || mock.ingredients
     }
     return { recipes: this.globalData.recipes, ingredients: this.globalData.ingredients }
   },

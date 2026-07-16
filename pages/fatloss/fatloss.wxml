@@ -1,0 +1,30 @@
+<view class="container fatloss-page">
+  <view class="hero card">
+    <view>
+      <view class="title">{{t.title}}</view>
+      <view class="muted subtitle">{{t.subtitle}}</view>
+    </view>
+    <view class="count-pill">{{t.selected}} {{selectedCount}}</view>
+  </view>
+
+  <view wx:for="{{groups}}" wx:key="id" class="group-card card">
+    <view class="group-head"><text>{{item.name}}</text><text class="muted">最多 {{item.limit}} 项</text></view>
+    <view class="food-grid">
+      <view wx:for="{{item.items}}" wx:for-item="food" wx:key="id" class="food-chip {{food.selected ? 'active' : ''}}" data-group="{{item.id}}" data-id="{{food.id}}" bindtap="toggleItem">
+        <view class="food-name">{{food.name}}</view>
+        <view class="food-amount">{{food.amount}}</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="action-row">
+    <button class="ghost-btn clear-btn" bindtap="clear">{{t.clear}}</button>
+    <button class="primary-btn make-btn" bindtap="makePlan">{{t.make}}</button>
+  </view>
+
+  <view wx:if="{{plan.length}}" class="result-card card">
+    <view class="result-title">{{t.result}}</view>
+    <view wx:for="{{plan}}" wx:key="*this" class="plan-line">{{item}}</view>
+    <view class="muted result-tip">{{t.tip}}</view>
+  </view>
+</view>

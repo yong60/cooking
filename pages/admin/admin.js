@@ -105,7 +105,7 @@ function formToIngredient(form) {
 }
 
 Page({
-  setTabBar() { const tabBar = typeof this.getTabBar === 'function' && this.getTabBar(); if (tabBar) tabBar.setData({ selected: 2 }) },
+  setTabBar() { const tabBar = typeof this.getTabBar === 'function' && this.getTabBar(); if (tabBar) tabBar.setData({ selected: 3 }) },
   data: {
     t: text,
     loading: true,
@@ -159,8 +159,47 @@ Page({
     this.setData({ recipeForm: form, commonRecipeTags: this.buildCommonTags(form), ingredientChoices: this.buildIngredientChoices(form) })
   },
 
+  loadLocalCatalog() {
+    const local = wx.getStorageSync('localCatalog') || {}
+    const recipes = (local.recipes || app.globalData.recipes || []).map(item => this.decorateRecipe(item))
+    const ingredients = (local.ingredients || app.globalData.ingredients || []).map(item => this.decorateIngredient(item))
+    app.globalData.recipes = recipes
+    app.globalData.ingredients = ingredients
+    this.setData({ isAdmin: true, recipes, ingredients, loading: false })
+    this.setRecipeForm(this.data.recipeForm)
+  },
+  saveLocalCatalog(recipes = this.data.recipes, ingredients = this.data.ingredients) {
+    const cleanRecipes = (recipes || []).map(item => ({
+      id: item.id,
+      categoryId: item.categoryId || 'home',
+      name: item.name || '',
+      desc: item.desc || '',
+      ingredients: item.ingredients || [],
+      tags: item.tags || [],
+      cover: item.cover || ''
+    }))
+    const cleanIngredients = (ingredients || []).map(item => ({
+      id: item.id,
+      categoryId: item.categoryId || 'veg',
+      name: item.name || '',
+      emoji: item.emoji || ''
+    }))
+    wx.setStorageSync('localCatalog', { recipes: cleanRecipes, ingredients: cleanIngredients })
+    app.globalData.recipes = cleanRecipes
+    app.globalData.ingredients = cleanIngredients
+  },
+  nextLocalId(prefix, list) {
+    const nums = (list || []).map(item => String(item.id || '').replace(prefix, '')).map(x => Number(x)).filter(x => !Number.isNaN(x))
+    const next = (nums.length ? Math.max(...nums) : 0) + 1
+    return prefix + String(next).padStart(3, '0')
+  },
+
   async checkPermission() {
     this.setData({ loading: true })
+    if (!api.hasBackend || !api.hasBackend() || wx.getStorageSync('localAdminUnlocked')) {
+      this.loadLocalCatalog()
+      return
+    }
     try {
       const userId = app.globalData.user && app.globalData.user.id
       const status = await api.adminStatus(userId)
@@ -174,7 +213,7 @@ Page({
       this.setData({ isAdmin: true, recipes, ingredients, loading: false })
       this.setRecipeForm(this.data.recipeForm)
     } catch (err) {
-      this.setData({ isAdmin: false, loading: false })
+      this.loadLocalCatalog()
     }
   },
 
@@ -217,7 +256,15 @@ Page({
     try {
       const userId = app.globalData.user && app.globalData.user.id
       const item = formToRecipe(this.data.recipeForm)
-      if (item.id) await api.updateRecipe({ userId, item })
+      if (!api.hasBackend || !api.hasBackend() || wx.getStorageSync('localAdminUnlocked')) {
+        const recipes = [...this.data.recipes]
+        if (!item.id) item.id = this.nextLocalId('r', recipes)
+        const index = recipes.findIndex(x => x.id === item.id)
+        if (index >= 0) recipes[index] = this.decorateRecipe(item)
+        else recipes.unshift(this.decorateRecipe(item))
+        this.saveLocalCatalog(recipes, this.data.ingredients)
+        this.setData({ recipes })
+      } else if (item.id) await api.updateRecipe({ userId, item })
       else await api.createRecipe({ userId, item })
       wx.showToast({ title: this.data.t.saved, icon: 'success' })
       this.cancelEdit()
@@ -230,7 +277,15 @@ Page({
     try {
       const userId = app.globalData.user && app.globalData.user.id
       const item = formToIngredient(this.data.ingredientForm)
-      if (item.id) await api.updateIngredient({ userId, item })
+      if (!api.hasBackend || !api.hasBackend() || wx.getStorageSync('localAdminUnlocked')) {
+        const ingredients = [...this.data.ingredients]
+        if (!item.id) item.id = this.nextLocalId('i', ingredients)
+        const index = ingredients.findIndex(x => x.id === item.id)
+        if (index >= 0) ingredients[index] = this.decorateIngredient(item)
+        else ingredients.unshift(this.decorateIngredient(item))
+        this.saveLocalCatalog(this.data.recipes, ingredients)
+        this.setData({ ingredients })
+      } else if (item.id) await api.updateIngredient({ userId, item })
       else await api.createIngredient({ userId, item })
       wx.showToast({ title: this.data.t.saved, icon: 'success' })
       this.cancelEdit()
@@ -244,7 +299,13 @@ Page({
     wx.showModal({ title: this.data.t.confirmDelete, success: async res => {
       if (!res.confirm) return
       try {
-        await api.deleteRecipe({ userId: app.globalData.user && app.globalData.user.id, id })
+        if (!api.hasBackend || !api.hasBackend() || wx.getStorageSync('localAdminUnlocked')) {
+          const recipes = this.data.recipes.filter(item => item.id !== id)
+          this.saveLocalCatalog(recipes, this.data.ingredients)
+          this.setData({ recipes })
+        } else {
+          await api.deleteRecipe({ userId: app.globalData.user && app.globalData.user.id, id })
+        }
         wx.showToast({ title: this.data.t.deleted, icon: 'success' })
         await this.checkPermission(); await app.loadCatalog()
       } catch (err) { wx.showToast({ title: this.data.t.failed, icon: 'none' }) }
@@ -256,7 +317,13 @@ Page({
     wx.showModal({ title: this.data.t.confirmDelete, success: async res => {
       if (!res.confirm) return
       try {
-        await api.deleteIngredient({ userId: app.globalData.user && app.globalData.user.id, id })
+        if (!api.hasBackend || !api.hasBackend() || wx.getStorageSync('localAdminUnlocked')) {
+          const ingredients = this.data.ingredients.filter(item => item.id !== id)
+          this.saveLocalCatalog(this.data.recipes, ingredients)
+          this.setData({ ingredients })
+        } else {
+          await api.deleteIngredient({ userId: app.globalData.user && app.globalData.user.id, id })
+        }
         wx.showToast({ title: this.data.t.deleted, icon: 'success' })
         await this.checkPermission(); await app.loadCatalog()
       } catch (err) { wx.showToast({ title: this.data.t.failed, icon: 'none' }) }

@@ -5,6 +5,7 @@
     "pages/ingredients/ingredients",
     "pages/cart/cart",
     "pages/combo/combo",
+    "pages/fatloss/fatloss",
     "pages/admin/admin",
     "pages/profile/profile",
     "pages/orders/orders"
@@ -34,6 +35,12 @@
         "text": "\u7ec4\u5408",
         "iconPath": "assets/tabbar/combo.png",
         "selectedIconPath": "assets/tabbar/combo-active.png"
+      },
+      {
+        "pagePath": "pages/fatloss/fatloss",
+        "text": "\u51cf\u8102",
+        "iconPath": "assets/tabbar/fatloss.png",
+        "selectedIconPath": "assets/tabbar/fatloss-active.png"
       },
       {
         "pagePath": "pages/admin/admin",

@@ -39,6 +39,7 @@ module.exports = {
   submitCart: data => request('/api/submit/cart', 'POST', data),
   submitIngredients: data => request('/api/submit/ingredients', 'POST', data),
   recommend: data => request('/api/recommend', 'POST', data),
+  fatLossPlan: data => request('/api/fatloss/plan', 'POST', data),
   testNotify: data => request('/api/notify/test', 'POST', data),
   unlockAdmin: data => request('/api/admin/unlock', 'POST', data),
   adminStatus: userId => request(`/api/admin/status?userId=${encodeURIComponent(userId || '')}`),

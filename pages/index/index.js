@@ -31,7 +31,8 @@ Page({
     "adminUnlocked": "\u7ba1\u7406\u6743\u9650\u5df2\u5f00\u542f",
     "adminAlready": "\u4f60\u5df2\u7ecf\u662f\u7ba1\u7406\u5458\u5566",
     "unlockLoginFirst": "\u8bf7\u5148\u767b\u5f55\u540e\u518d\u8bd5",
-    "unlockFailed": "\u5f00\u542f\u5931\u8d25\uff0c\u8bf7\u7a0d\u540e\u518d\u8bd5"
+    "unlockFailed": "\u5f00\u542f\u5931\u8d25\uff0c\u8bf7\u7a0d\u540e\u518d\u8bd5",
+    "adminLocalUnlocked": "\u5df2\u5728\u672c\u673a\u5f00\u542f\u7ba1\u7406\u5165\u53e3"
 }, user: null, loggedIn: false, cartCount: 0, selectedCount: 0, loggingIn: false, logoTapCount: 0, lastLogoTap: 0, logoFlipped: false, logoAnimClass: '' },
   async onShow() { this.setTabBar(); await app.loadCatalog(); await app.loadState(); this.refresh() },
   setTabBar() { const tabBar = typeof this.getTabBar === 'function' && this.getTabBar(); if (tabBar) tabBar.setData({ selected: 0 }) },
@@ -59,16 +60,22 @@ Page({
     this.setData({ logoTapCount: count, lastLogoTap: now })
     if (count > 6) {
       this.setData({ logoTapCount: 0 })
-      if (!app.isLoggedIn()) {
-        wx.showToast({ title: this.data.t.unlockLoginFirst, icon: 'none' })
-        return
-      }
       try {
-        let user = app.globalData.user || {}
-        if ((user.id || '').indexOf('local_') === 0) {
-          user = await app.loginWithWechat({})
+        if (!app.isLoggedIn()) {
+          await app.loginWithWechat({})
           await app.loadState()
           this.refresh()
+        }
+        if (!app.isLoggedIn()) {
+          wx.showToast({ title: this.data.t.unlockLoginFirst, icon: 'none' })
+          return
+        }
+        let user = app.globalData.user || {}
+        if (!api.hasBackend || !api.hasBackend() || (user.id || '').indexOf('local_') === 0) {
+          wx.setStorageSync('adminUnlocked', true)
+          wx.setStorageSync('localAdminUnlocked', true)
+          wx.showToast({ title: this.data.t.adminLocalUnlocked, icon: 'success' })
+          return
         }
         let result
         try {

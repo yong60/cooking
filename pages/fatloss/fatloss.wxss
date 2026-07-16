@@ -1,0 +1,21 @@
+.fatloss-page { padding-bottom: calc(210rpx + env(safe-area-inset-bottom)); }
+.hero { display: flex; align-items: flex-start; justify-content: space-between; gap: 20rpx; padding: 34rpx; background: linear-gradient(145deg,#fff,#ecf9e8 70%,#d7f1ce); }
+.title { font-size: 44rpx; font-weight: 950; }
+.subtitle { margin-top: 10rpx; }
+.count-pill { flex-shrink: 0; padding: 12rpx 20rpx; border-radius: 999rpx; color: #2f9b52; background: #f1ffe9; font-size: 24rpx; font-weight: 950; }
+.group-card { margin-top: 24rpx; padding: 24rpx; }
+.group-head { display: flex; align-items: center; justify-content: space-between; gap: 16rpx; margin-bottom: 18rpx; font-size: 31rpx; font-weight: 950; }
+.food-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14rpx; }
+.food-chip { min-height: 88rpx; box-sizing: border-box; display: flex; flex-direction: column; justify-content: center; gap: 6rpx; padding: 16rpx 18rpx; border-radius: 24rpx; background: #fffaf5; box-shadow: inset 0 0 0 2rpx #f2e7dc; }
+.food-chip.active { color: #fff; background: linear-gradient(135deg,#7fd957,#32b45f); box-shadow: 0 12rpx 24rpx rgba(50,180,95,.18); }
+.food-name { font-size: 27rpx; font-weight: 950; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.food-amount { color: #8b7a70; font-size: 22rpx; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.food-chip.active .food-amount { color: rgba(255,255,255,.88); }
+.action-row { display: flex; gap: 18rpx; margin-top: 28rpx; }
+.clear-btn { width: 190rpx; height: 82rpx; }
+.make-btn { flex: 1; height: 82rpx; }
+.result-card { margin-top: 26rpx; padding: 28rpx; }
+.result-title { margin-bottom: 18rpx; font-size: 32rpx; font-weight: 950; }
+.plan-line { padding: 16rpx 0; border-bottom: 1rpx solid #f1e8df; font-size: 28rpx; font-weight: 850; }
+.plan-line:last-of-type { border-bottom: 0; }
+.result-tip { margin-top: 18rpx; padding: 18rpx 20rpx; border-radius: 22rpx; background: #f8fff3; color: #5f8a4b; }

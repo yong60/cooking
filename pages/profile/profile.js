@@ -1,7 +1,7 @@
 const api = require('../../utils/api')
 const app = getApp()
 Page({
-  setTabBar() { const tabBar = typeof this.getTabBar === 'function' && this.getTabBar(); if (tabBar) tabBar.setData({ selected: 3 }) },
+  setTabBar() { const tabBar = typeof this.getTabBar === 'function' && this.getTabBar(); if (tabBar) tabBar.setData({ selected: 4 }) },
   data: { t: {
     "submitterDesc": "\u7528\u4e8e\u663e\u793a\u63d0\u4ea4\u4eba",
     "clearCart": "\u6e05\u7a7a\u70b9\u83dc\u8f66",
