@@ -35,9 +35,9 @@
     <view class="card option-card">
       <view class="option-title">{{t.howMany}}</view>
       <view class="count-row">
-        <button class="count-btn {{dishCount === 1 ? 'active' : ''}}" data-count="1" bindtap="chooseCount">{{t.one}}</button>
-        <button class="count-btn {{dishCount === 2 ? 'active' : ''}}" data-count="2" bindtap="chooseCount">{{t.two}}</button>
-        <button class="count-btn {{dishCount === 3 ? 'active' : ''}}" data-count="3" bindtap="chooseCount">{{t.three}}</button>
+        <button class="count-btn {{dishCount == 1 ? 'active' : ''}}" data-count="1" bindtap="chooseCount">{{t.one}}</button>
+        <button class="count-btn {{dishCount == 2 ? 'active' : ''}}" data-count="2" bindtap="chooseCount">{{t.two}}</button>
+        <button class="count-btn {{dishCount == 3 ? 'active' : ''}}" data-count="3" bindtap="chooseCount">{{t.three}}</button>
       </view>
       <view class="soup-row">
         <view class="soup-copy"><view class="option-title">{{t.withSoup}}</view><view class="muted">{{t.soupHint}}</view></view>

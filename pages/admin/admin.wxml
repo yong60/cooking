@@ -5,11 +5,11 @@
   <view wx:if="{{loading}}" class="empty card">{{t.loading}}</view>
   <view wx:elif="{{!unlocked || !isAdmin}}" class="empty card"><view class="empty-title">{{t.noPermission}}</view></view>
   <block wx:else>
-    <view class="tabs card"><view class="tab {{activeTab === 'recipes' ? 'active' : ''}}" data-tab="recipes" bindtap="switchTab">{{t.recipes}}</view><view class="tab {{activeTab === 'ingredients' ? 'active' : ''}}" data-tab="ingredients" bindtap="switchTab">{{t.ingredients}}</view></view>
+    <view class="tabs card"><view class="tab {{activeTab == 'recipes' ? 'active' : ''}}" data-tab="recipes" bindtap="switchTab">{{t.recipes}}</view><view class="tab {{activeTab == 'ingredients' ? 'active' : ''}}" data-tab="ingredients" bindtap="switchTab">{{t.ingredients}}</view></view>
 
-    <view wx:if="{{activeTab === 'recipes'}}">
+    <view wx:if="{{activeTab == 'recipes'}}">
       <button class="primary-btn add-btn" bindtap="startAddRecipe">{{t.addRecipe}}</button>
-      <view wx:if="{{editingType === 'recipe'}}" class="form-card card">
+      <view wx:if="{{editingType == 'recipe'}}" class="form-card card">
         <view class="form-title">{{recipeForm.id ? t.edit : t.addRecipe}}</view>
         <input class="input" placeholder="{{t.name}}" value="{{recipeForm.name}}" data-field="name" bindinput="onRecipeInput" />
         <input class="input" placeholder="{{t.desc}}" value="{{recipeForm.desc}}" data-field="desc" bindinput="onRecipeInput" />
@@ -27,7 +27,7 @@
         <button class="advanced-toggle" bindtap="toggleRecipeAdvanced">{{recipeAdvanced ? t.hideOptions : t.optionalMore}}</button>
         <view wx:if="{{recipeAdvanced}}" class="advanced-box">
           <view class="field-label">{{t.category}}</view>
-          <view class="choice-wrap"><view wx:for="{{recipeCategories}}" wx:key="id" class="choice-chip {{recipeForm.categoryId === item.id ? 'active' : ''}}" data-id="{{item.id}}" bindtap="chooseRecipeCategory">{{item.name}}</view></view>
+          <view class="choice-wrap"><view wx:for="{{recipeCategories}}" wx:key="id" class="choice-chip {{recipeForm.categoryId == item.id ? 'active' : ''}}" data-id="{{item.id}}" bindtap="chooseRecipeCategory">{{item.name}}</view></view>
           <input class="input" placeholder="{{t.recipeId}}" value="{{recipeForm.id}}" data-field="id" bindinput="onRecipeInput" />
         </view>
 
@@ -41,14 +41,14 @@
       </view>
     </view>
 
-    <view wx:if="{{activeTab === 'ingredients'}}">
+    <view wx:if="{{activeTab == 'ingredients'}}">
       <button class="primary-btn add-btn" bindtap="startAddIngredient">{{t.addIngredient}}</button>
-      <view wx:if="{{editingType === 'ingredient'}}" class="form-card card">
+      <view wx:if="{{editingType == 'ingredient'}}" class="form-card card">
         <view class="form-title">{{ingredientForm.id ? t.edit : t.addIngredient}}</view>
         <input class="input" placeholder="{{t.name}}" value="{{ingredientForm.name}}" data-field="name" bindinput="onIngredientInput" />
         <input class="input" placeholder="{{t.ingredientIcon}}" value="{{ingredientForm.emoji}}" data-field="emoji" bindinput="onIngredientInput" />
         <view class="field-label">{{t.category}}</view>
-        <view class="choice-wrap"><view wx:for="{{ingredientCategories}}" wx:key="id" class="choice-chip {{ingredientForm.categoryId === item.id ? 'active' : ''}}" data-id="{{item.id}}" bindtap="chooseIngredientCategory">{{item.name}}</view></view>
+        <view class="choice-wrap"><view wx:for="{{ingredientCategories}}" wx:key="id" class="choice-chip {{ingredientForm.categoryId == item.id ? 'active' : ''}}" data-id="{{item.id}}" bindtap="chooseIngredientCategory">{{item.name}}</view></view>
         <button class="advanced-toggle" bindtap="toggleIngredientAdvanced">{{ingredientAdvanced ? t.hideOptions : t.optionalMore}}</button>
         <view wx:if="{{ingredientAdvanced}}" class="advanced-box"><input class="input" placeholder="{{t.ingredientId}}" value="{{ingredientForm.id}}" data-field="id" bindinput="onIngredientInput" /></view>
         <view class="form-actions"><button class="ghost-btn" bindtap="cancelEdit">{{t.cancel}}</button><button class="primary-btn save-btn" bindtap="saveIngredient">{{t.save}}</button></view>
