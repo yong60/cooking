@@ -61,6 +61,11 @@ Page({
       confirmText: '\u77e5\u9053\u5566'
     })
   },
+  unlockLocalAdmin() {
+    wx.setStorageSync('adminUnlocked', true)
+    wx.setStorageSync('localAdminUnlocked', true)
+    this.showAdminResult(this.data.t.adminLocalUnlocked)
+  },
   async logoTap() {
     this.playLogoAnimation()
     const now = Date.now()
@@ -80,9 +85,7 @@ Page({
         }
         let user = app.globalData.user || {}
         if (!api.hasBackend || !api.hasBackend() || (user.id || '').indexOf('local_') === 0) {
-          wx.setStorageSync('adminUnlocked', true)
-          wx.setStorageSync('localAdminUnlocked', true)
-          this.showAdminResult(this.data.t.adminLocalUnlocked)
+          this.unlockLocalAdmin()
           return
         }
         let result
@@ -101,7 +104,7 @@ Page({
         wx.setStorageSync('adminUnlocked', true)
         this.showAdminResult(result && result.alreadyAdmin ? this.data.t.adminAlready : this.data.t.adminUnlocked)
       } catch (err) {
-        wx.showToast({ title: this.data.t.unlockFailed, icon: 'none' })
+        this.unlockLocalAdmin()
       }
     }
   }
