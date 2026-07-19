@@ -4,5 +4,6 @@
 module.exports = {
   BASE_URL: '',
   WS_URL: '',
-  POLL_INTERVAL: 3000
+  POLL_INTERVAL: 3000,
+  PUSHPLUS_TOKENS: []
 }

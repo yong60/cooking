@@ -5,6 +5,13 @@ function unique(arr) {
   return Array.from(new Set(arr || []))
 }
 
+function notifyFailed(notify) {
+  if (!notify) return false
+  if (notify.skipped) return true
+  const results = notify.results || []
+  return results.some(item => item && item.error)
+}
+
 App({
   globalData: {
     user: null,
@@ -227,9 +234,19 @@ App({
     const log = this.makeSubmitLog('cart', payload)
     try {
       const result = await api.submitCart(payload)
+      if (payload.notifyEnabled !== false && notifyFailed(result.notify) && api.hasLocalPushplus && api.hasLocalPushplus()) {
+        result.notify = await api.sendPushplus("\u80e1\u95f9\u53a8\u623f\uff1a\u70b9\u83dc\u63d0\u4ea4", this.cartNotifyContent(payload))
+      }
       this.saveSubmitLog({ ...log, notify: result.notify, local: false })
       return result
     } catch (err) {
+      if (payload.notifyEnabled !== false && api.hasLocalPushplus && api.hasLocalPushplus()) {
+        try {
+          const notify = await api.sendPushplus("\u80e1\u95f9\u53a8\u623f\uff1a\u70b9\u83dc\u63d0\u4ea4", this.cartNotifyContent(payload))
+          this.saveSubmitLog({ ...log, notify, local: true })
+          return { ok: true, local: true, notify }
+        } catch (notifyErr) {}
+      }
       this.saveSubmitLog({ ...log, local: true, error: String(err && err.message || err) })
       return { ok: true, local: true }
     }
@@ -245,12 +262,38 @@ App({
     const log = this.makeSubmitLog('ingredients', payload)
     try {
       const result = await api.submitIngredients(payload)
+      if (payload.notifyEnabled !== false && notifyFailed(result.notify) && api.hasLocalPushplus && api.hasLocalPushplus()) {
+        result.notify = await api.sendPushplus("\u80e1\u95f9\u53a8\u623f\uff1a\u98df\u6750\u63d0\u4ea4", this.ingredientsNotifyContent(payload))
+      }
       this.saveSubmitLog({ ...log, notify: result.notify, local: false })
       return result
     } catch (err) {
+      if (payload.notifyEnabled !== false && api.hasLocalPushplus && api.hasLocalPushplus()) {
+        try {
+          const notify = await api.sendPushplus("\u80e1\u95f9\u53a8\u623f\uff1a\u98df\u6750\u63d0\u4ea4", this.ingredientsNotifyContent(payload))
+          this.saveSubmitLog({ ...log, notify, local: true })
+          return { ok: true, local: true, notify }
+        } catch (notifyErr) {}
+      }
       this.saveSubmitLog({ ...log, local: true, error: String(err && err.message || err) })
       return { ok: true, local: true }
     }
+  },
+
+  cartNotifyContent(payload = {}) {
+    const lines = (payload.cart || []).map(row => {
+      const recipe = this.getRecipeById(row.recipeId) || {}
+      return `- ${recipe.name || row.recipeId} x${row.quantity || 1}`
+    }).join('\n') || '- 暂无'
+    return `今晚想吃：\n${lines}\n\n备注：${payload.remark || '无'}`
+  },
+
+  ingredientsNotifyContent(payload = {}) {
+    const lines = (payload.selectedIngredientIds || []).map(id => {
+      const item = this.getIngredientById(id) || {}
+      return `- ${item.name || id}`
+    }).join('\n') || '- 暂无'
+    return `今天想用这些食材做饭：\n${lines}`
   },
 
   makeSubmitLog(type, payload = {}) {

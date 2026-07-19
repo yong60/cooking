@@ -25,8 +25,31 @@ function request(path, method = 'GET', data = {}) {
   })
 }
 
+function pushplusTokens() {
+  const raw = config.PUSHPLUS_TOKENS || config.PUSHPLUS_TOKEN || ''
+  if (Array.isArray(raw)) return raw.map(item => String(item).trim()).filter(Boolean)
+  return String(raw).replace(/\n/g, ',').replace(/;/g, ',').split(',').map(item => item.trim()).filter(Boolean)
+}
+
+function sendPushplus(title, content) {
+  const tokens = pushplusTokens()
+  if (!tokens.length) return Promise.reject(new Error('PUSHPLUS_TOKEN is not configured'))
+  return Promise.all(tokens.map(token => new Promise(resolve => {
+    wx.request({
+      url: 'https://www.pushplus.plus/send',
+      method: 'POST',
+      data: { token, title, content, template: 'txt' },
+      header: { 'content-type': 'application/json' },
+      success: res => resolve(res.data || { statusCode: res.statusCode }),
+      fail: err => resolve({ error: String(err && err.errMsg || err) })
+    })
+  }))).then(results => ({ count: tokens.length, results }))
+}
+
 module.exports = {
   hasBackend: () => Boolean(baseUrl()),
+  hasLocalPushplus: () => pushplusTokens().length > 0,
+  sendPushplus,
   login: data => request('/api/auth/wechat-login', 'POST', data),
   updateProfile: data => request('/api/user/profile', 'POST', data),
   bindPartner: data => request('/api/user/bind-partner', 'POST', data),

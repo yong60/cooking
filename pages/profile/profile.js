@@ -103,6 +103,14 @@ Page({
       const result = await api.testNotify({ userId: app.globalData.user && app.globalData.user.id })
       if (result && result.notify && result.notify.skipped) throw new Error(result.notify.reason || 'pushplus skipped')
       wx.showToast({ title: this.data.t.testSent, icon: 'success' })
-    } catch (err) { wx.showToast({ title: this.data.t.configPush, icon: 'none' }) }
+    } catch (err) {
+      try {
+        if (!api.hasLocalPushplus || !api.hasLocalPushplus()) throw err
+        await api.sendPushplus('\u80e1\u95f9\u53a8\u623f\uff1a\u6d4b\u8bd5\u901a\u77e5', '\u8fd9\u662f\u4e00\u6761\u6d4b\u8bd5\u901a\u77e5\u3002')
+        wx.showToast({ title: this.data.t.testSent, icon: 'success' })
+      } catch (notifyErr) {
+        wx.showToast({ title: this.data.t.configPush, icon: 'none' })
+      }
+    }
   }
 })
