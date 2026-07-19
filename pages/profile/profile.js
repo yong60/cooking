@@ -18,6 +18,7 @@ Page({
     "recipes": "\u5df2\u70b9\u83dc",
     "ingredients": "\u5df2\u9009\u98df\u6750",
     "actions": "\u5e38\u7528\u64cd\u4f5c",
+    "history": "\ud83d\udccb \u67e5\u770b\u5386\u53f2\u8ba2\u5355",
     "testPush": "\ud83d\udce3 \u6d4b\u8bd5\u63a8\u9001\u901a\u77e5",
     "clearCartIcon": "\ud83d\uded2 \u6e05\u7a7a\u70b9\u83dc\u8f66",
     "clearIngredientsIcon": "\ud83e\udd66 \u6e05\u7a7a\u98df\u6750",
@@ -60,6 +61,9 @@ Page({
       profileForm: { nickName: user.nickName || '', avatarUrl: user.avatarUrl || '' }
     })
   },
+  goMenu() { wx.navigateTo({ url: '/pages/menu/menu' }) },
+  goIngredients() { wx.navigateTo({ url: '/pages/ingredients/ingredients' }) },
+  goOrders() { wx.navigateTo({ url: '/pages/orders/orders' }) },
   login() { if (wx.getUserProfile) { wx.getUserProfile({ desc: this.data.t.submitterDesc, success: async res => { await app.loginWithWechat(res.userInfo || {}); await app.loadState(); this.refresh() }, fail: async () => { await app.loginWithWechat({}); await app.loadState(); this.refresh() } }) } },
   clearCart() { wx.showModal({ title: this.data.t.clearCart, content: this.data.t.clearCartContent, success: async res => { if (res.confirm) { await app.clearCart(); this.refresh() } } }) },
   clearIngredients() { wx.showModal({ title: this.data.t.clearIngredients, content: this.data.t.clearIngredientsContent, success: async res => { if (res.confirm) { await app.updateIngredientSelection([]); this.refresh() } } }) },
@@ -94,5 +98,11 @@ Page({
       path: `/pages/profile/profile?partnerId=${encodeURIComponent(user.id || '')}`
     }
   },
-  async testNotify() { try { await api.testNotify({ userId: app.globalData.user && app.globalData.user.id }); wx.showToast({ title: this.data.t.testSent, icon: 'success' }) } catch (err) { wx.showToast({ title: this.data.t.configPush, icon: 'none' }) } }
+  async testNotify() {
+    try {
+      const result = await api.testNotify({ userId: app.globalData.user && app.globalData.user.id })
+      if (result && result.notify && result.notify.skipped) throw new Error(result.notify.reason || 'pushplus skipped')
+      wx.showToast({ title: this.data.t.testSent, icon: 'success' })
+    } catch (err) { wx.showToast({ title: this.data.t.configPush, icon: 'none' }) }
+  }
 })

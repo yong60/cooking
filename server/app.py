@@ -330,6 +330,13 @@ class Handler(BaseHTTPRequestHandler):
                     state = get_couple(db, user_id)
                     write_db(db)
                 return self.send_json(200, {'state': state})
+            if parsed.path == '/api/orders':
+                user_id = (query.get('userId') or [''])[0]
+                with LOCK:
+                    db = read_db()
+                    state = get_couple(db, user_id)
+                    logs = state.get('submitLogs', [])[:100]
+                return self.send_json(200, {'logs': logs})
             return self.send_json(404, {'message': 'Not found'})
         except Exception as exc:
             return self.send_json(500, {'message': str(exc)})

@@ -1,4 +1,5 @@
 const api = require('../../utils/api')
+const app = getApp()
 
 const groups = [
   {
@@ -57,6 +58,8 @@ Page({
       selected: '\u5df2\u9009',
       clear: '\u6e05\u7a7a',
       make: '\u751f\u6210\u642d\u914d',
+      addToCart: '\u52a0\u5165\u70b9\u83dc\u8f66',
+      added: '\u5df2\u52a0\u5165\u70b9\u83dc\u8f66',
       result: '\u4eca\u5929\u53ef\u4ee5\u8fd9\u6837\u5403',
       empty: '\u5148\u9009\u4e00\u4e9b\u98df\u6750\u5427',
       tip: '\u5efa\u8bae\u70f9\u996a\u5c11\u6cb9\u5c11\u7cd6\uff0c\u53e3\u5473\u6e05\u723d\u4e00\u70b9\u3002'
@@ -116,5 +119,18 @@ Page({
       ;(selected[key] || []).forEach(item => plan.push(`${item.name}：${item.amount}`))
     })
     this.setData({ plan })
+  },
+  async addPlanToCart() {
+    if (!this.data.plan.length) return
+    const name = '\u81ea\u9009\u51cf\u8102\u9910\u5957\u9910'
+    const desc = this.data.plan.join('\uff1b')
+    await app.addCustomRecipeToCart({
+      id: `fatloss_${Date.now()}`,
+      name,
+      desc,
+      tags: ['\u51cf\u8102', '\u81ea\u9009'],
+      cover: '\uD83E\uDD57'
+    })
+    wx.showToast({ title: this.data.t.added, icon: 'success' })
   }
 })

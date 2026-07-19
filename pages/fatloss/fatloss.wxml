@@ -26,5 +26,6 @@
     <view class="result-title">{{t.result}}</view>
     <view wx:for="{{plan}}" wx:key="*this" class="plan-line">{{item}}</view>
     <view class="muted result-tip">{{t.tip}}</view>
+    <button class="primary-btn add-meal-btn" bindtap="addPlanToCart">{{t.addToCart}}</button>
   </view>
 </view>

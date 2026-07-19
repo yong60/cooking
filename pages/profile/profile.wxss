@@ -12,6 +12,7 @@
 .login-btn { width: 200rpx; min-width: 200rpx; max-width: 200rpx; height: 64rpx; display: flex; align-items: center; justify-content: center; flex-shrink: 0; padding: 0; border-radius: 999rpx; color: #fff; background: #ff5a1f; font-size: 24rpx; line-height: 64rpx; font-weight: 900; text-align: center; white-space: nowrap; }
 .stats { display: flex; margin-top: 22rpx; padding: 28rpx 0; }
 .stat-item { flex: 1; text-align: center; border-right: 1rpx solid #f1e8df; }
+.stat-item:active { background: rgba(255,240,229,.55); }
 .stat-item:last-child { border-right: 0; }
 .stat-num { margin-bottom: 8rpx; color: #ff5a1f; font-size: 48rpx; font-weight: 950; }
 .edit-card, .bind-card { display: flex; flex-direction: column; gap: 18rpx; padding: 26rpx; }

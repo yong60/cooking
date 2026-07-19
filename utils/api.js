@@ -34,6 +34,7 @@ module.exports = {
   getRecipes: () => request('/api/recipes'),
   getIngredients: () => request('/api/ingredients'),
   getState: userId => request(`/api/state?userId=${encodeURIComponent(userId || '')}`),
+  getOrders: userId => request(`/api/orders?userId=${encodeURIComponent(userId || '')}`),
   updateCart: data => request('/api/cart', 'PUT', data),
   updateIngredientSelection: data => request('/api/ingredient-selection', 'PUT', data),
   submitCart: data => request('/api/submit/cart', 'POST', data),

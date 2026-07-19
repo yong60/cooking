@@ -145,7 +145,8 @@ Page({
     return { ...item, coverIsImage: isImageCover(item.cover), coverText: coverText(item.cover), tags: item.tags || [], ingredients: item.ingredients || [] }
   },
   decorateIngredient(item) {
-    return { ...item, emoji: item.emoji || '\uD83E\uDD66' }
+    const category = INGREDIENT_CATEGORIES.find(row => row.id === item.categoryId)
+    return { ...item, emoji: item.emoji || '\uD83E\uDD66', categoryName: category ? category.name : (item.categoryId || '') }
   },
   buildCommonTags(form) {
     const selected = new Set(parseList(form.tagsText))

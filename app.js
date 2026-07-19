@@ -162,6 +162,30 @@ App({
     return this.setCartItem(recipeId, (row ? row.quantity : 0) + 1)
   },
 
+  addCustomRecipeToCart(recipe) {
+    const item = {
+      id: recipe.id || `custom_${Date.now()}`,
+      categoryId: recipe.categoryId || 'custom',
+      name: recipe.name || "\u81ea\u9009\u5957\u9910",
+      desc: recipe.desc || '',
+      ingredients: recipe.ingredients || [],
+      tags: recipe.tags || ["\u81ea\u9009"],
+      cover: recipe.cover || "\uD83E\uDD57"
+    }
+    const exists = this.globalData.recipes.find(row => row.id === item.id)
+    if (!exists) {
+      this.globalData.recipes = [item, ...(this.globalData.recipes || [])]
+      const localCatalog = wx.getStorageSync('localCatalog') || {}
+      const recipes = localCatalog.recipes || this.globalData.recipes
+      wx.setStorageSync('localCatalog', {
+        ...localCatalog,
+        recipes: exists ? recipes : [item, ...recipes.filter(row => row.id !== item.id)],
+        ingredients: localCatalog.ingredients || this.globalData.ingredients || []
+      })
+    }
+    return this.addToCart(item.id)
+  },
+
   minusFromCart(recipeId) {
     const row = (this.globalData.state.cart || []).find(item => item.recipeId === recipeId)
     return this.setCartItem(recipeId, Math.max(0, (row ? row.quantity : 0) - 1))
@@ -194,35 +218,92 @@ App({
   },
 
   async submitCart(extra = {}) {
+    const cart = this.globalData.state.cart || []
     const payload = {
       userId: this.globalData.user && this.globalData.user.id,
-      cart: this.globalData.state.cart || [],
+      cart,
       ...extra
     }
+    const log = this.makeSubmitLog('cart', payload)
     try {
-      return await api.submitCart(payload)
+      const result = await api.submitCart(payload)
+      this.saveSubmitLog({ ...log, notify: result.notify, local: false })
+      return result
     } catch (err) {
-      const logs = wx.getStorageSync('localSubmitLogs') || []
-      logs.unshift({ type: 'cart', payload, createdAt: Date.now(), local: true })
-      wx.setStorageSync('localSubmitLogs', logs)
+      this.saveSubmitLog({ ...log, local: true, error: String(err && err.message || err) })
       return { ok: true, local: true }
     }
   },
 
   async submitIngredients(extra = {}) {
+    const selectedIngredientIds = this.globalData.state.selectedIngredientIds || []
     const payload = {
       userId: this.globalData.user && this.globalData.user.id,
-      selectedIngredientIds: this.globalData.state.selectedIngredientIds || [],
+      selectedIngredientIds,
       ...extra
     }
+    const log = this.makeSubmitLog('ingredients', payload)
     try {
-      return await api.submitIngredients(payload)
+      const result = await api.submitIngredients(payload)
+      this.saveSubmitLog({ ...log, notify: result.notify, local: false })
+      return result
     } catch (err) {
-      const logs = wx.getStorageSync('localSubmitLogs') || []
-      logs.unshift({ type: 'ingredients', payload, createdAt: Date.now(), local: true })
-      wx.setStorageSync('localSubmitLogs', logs)
+      this.saveSubmitLog({ ...log, local: true, error: String(err && err.message || err) })
       return { ok: true, local: true }
     }
+  },
+
+  makeSubmitLog(type, payload = {}) {
+    const createdAt = Date.now()
+    if (type === 'cart') {
+      const items = (payload.cart || []).map(row => {
+        const recipe = this.getRecipeById(row.recipeId) || {}
+        return { id: row.recipeId, name: recipe.name || row.recipeId, quantity: row.quantity || 1 }
+      })
+      return { id: `log_${createdAt}`, type, items, remark: payload.remark || '', notifyEnabled: payload.notifyEnabled !== false, createdAt }
+    }
+    const ingredients = (payload.selectedIngredientIds || []).map(id => {
+      const item = this.getIngredientById(id) || {}
+      return { id, name: item.name || id }
+    })
+    return { id: `log_${createdAt}`, type, ingredients, notifyEnabled: payload.notifyEnabled !== false, createdAt }
+  },
+
+  saveSubmitLog(log) {
+    const logs = wx.getStorageSync('localSubmitLogs') || []
+    const next = [log, ...logs.filter(item => item.id !== log.id)].slice(0, 100)
+    wx.setStorageSync('localSubmitLogs', next)
+    this.globalData.state = { ...this.globalData.state, submitLogs: next }
+    this.saveLocalState()
+  },
+
+  getSubmitLogs() {
+    const remote = (this.globalData.state && this.globalData.state.submitLogs) || []
+    const local = wx.getStorageSync('localSubmitLogs') || []
+    const normalizedRemote = remote.map((item, index) => ({
+      id: item.id || `remote_${item.createdAt || index}`,
+      type: item.type,
+      items: (item.cart || []).map(row => {
+        const recipe = this.getRecipeById(row.recipeId) || {}
+        return { id: row.recipeId, name: recipe.name || row.recipeId, quantity: row.quantity || 1 }
+      }),
+      ingredients: (item.selectedIngredientIds || []).map(id => {
+        const ingredient = this.getIngredientById(id) || {}
+        return { id, name: ingredient.name || id }
+      }),
+      remark: item.remark || '',
+      notify: item.notify,
+      local: false,
+      createdAt: item.createdAt || ''
+    }))
+    const all = [...local, ...normalizedRemote]
+    const seen = new Set()
+    return all.filter(item => {
+      const key = item.id || JSON.stringify(item)
+      if (seen.has(key)) return false
+      seen.add(key)
+      return true
+    }).slice(0, 100)
   },
 
   async recommend(options = {}) {

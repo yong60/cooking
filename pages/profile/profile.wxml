@@ -5,7 +5,7 @@
     <view class="user-info"><view class="user-name">{{loggedIn ? (user.nickName || t.wechatUser) : t.notLogin}}</view><view class="muted">{{loggedIn ? t.joined : t.loginFirst}}</view><view class="profile-subtitle">{{t.subtitle}}</view></view>
     <button wx:if="{{!loggedIn}}" class="login-btn" bindtap="login">{{t.login}}</button>
   </view>
-  <view class="stats card"><view class="stat-item"><view class="stat-num">{{cartCount}}</view><view class="muted">{{t.recipes}}</view></view><view class="stat-item"><view class="stat-num">{{selectedCount}}</view><view class="muted">{{t.ingredients}}</view></view></view>
+  <view class="stats card"><view class="stat-item" bindtap="goMenu"><view class="stat-num">{{cartCount}}</view><view class="muted">{{t.recipes}}</view></view><view class="stat-item" bindtap="goIngredients"><view class="stat-num">{{selectedCount}}</view><view class="muted">{{t.ingredients}}</view></view></view>
   <view wx:if="{{loggedIn}}" class="section-title"><text>{{t.profileTitle}}</text></view>
   <view wx:if="{{loggedIn}}" class="card edit-card">
     <view class="avatar-edit"><image wx:if="{{profileForm.avatarUrl}}" class="edit-avatar" src="{{profileForm.avatarUrl}}" mode="aspectFill" /><view wx:else class="edit-avatar text-avatar">H</view><button class="ghost-btn avatar-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">{{t.chooseAvatar}}</button></view>
@@ -26,5 +26,5 @@
     <button class="ghost-btn unbind-btn" bindtap="unbindPartner">{{t.unbind}}</button>
   </view>
   <view class="section-title"><text>{{t.actions}}</text></view>
-  <view class="card action-list"><button class="action-row" bindtap="clearCart"><text>{{t.clearCartIcon}}</text><view class="row-arrow"></view></button><button class="action-row" bindtap="clearIngredients"><text>{{t.clearIngredientsIcon}}</text><view class="row-arrow"></view></button><button class="action-row" bindtap="testNotify"><text>{{t.testPush}}</text><view class="row-arrow"></view></button></view>
+  <view class="card action-list"><button class="action-row" bindtap="goOrders"><text>{{t.history}}</text><view class="row-arrow"></view></button><button class="action-row" bindtap="clearCart"><text>{{t.clearCartIcon}}</text><view class="row-arrow"></view></button><button class="action-row" bindtap="clearIngredients"><text>{{t.clearIngredientsIcon}}</text><view class="row-arrow"></view></button><button class="action-row" bindtap="testNotify"><text>{{t.testPush}}</text><view class="row-arrow"></view></button></view>
 </view>

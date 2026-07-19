@@ -19,3 +19,4 @@
 .plan-line { padding: 16rpx 0; border-bottom: 1rpx solid #f1e8df; font-size: 28rpx; font-weight: 850; }
 .plan-line:last-of-type { border-bottom: 0; }
 .result-tip { margin-top: 18rpx; padding: 18rpx 20rpx; border-radius: 22rpx; background: #f8fff3; color: #5f8a4b; }
+.add-meal-btn { margin-top: 22rpx; height: 82rpx; }

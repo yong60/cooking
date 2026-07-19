@@ -1,1 +1,27 @@
-<view class="container orders-page"><view class="empty card"><view class="empty-title">{{t.title}}</view><view class="muted">{{t.hint}}</view><button class="primary-btn empty-btn" bindtap="goHome">{{t.home}}</button><button class="ghost-btn empty-btn" bindtap="goMenu">{{t.menu}}</button></view></view>
+<view class="container orders-page">
+  <view class="head card">
+    <view class="title">{{t.title}}</view>
+    <view class="muted">{{t.hint}}</view>
+  </view>
+
+  <view wx:if="{{!logs.length}}" class="empty card">
+    <view class="empty-title">{{t.empty}}</view>
+    <view class="empty-actions">
+      <button class="primary-btn empty-btn" bindtap="goMenu">{{t.menu}}</button>
+      <button class="ghost-btn empty-btn" bindtap="goIngredients">{{t.ingredientsBtn}}</button>
+    </view>
+  </view>
+
+  <view wx:for="{{logs}}" wx:key="id" class="order-card card">
+    <view class="order-head">
+      <view class="order-type">{{item.title}}</view>
+      <view class="order-time">{{item.timeText}}</view>
+    </view>
+    <view class="order-items">{{item.itemText}}</view>
+    <view wx:if="{{item.remark}}" class="muted remark">{{t.remark}}：{{item.remark}}</view>
+    <view class="meta-row">
+      <text class="badge">{{item.notifyText}}</text>
+      <text wx:if="{{item.local}}" class="badge light">{{t.local}}</text>
+    </view>
+  </view>
+</view>
