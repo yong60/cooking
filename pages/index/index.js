@@ -53,12 +53,20 @@ Page({
     this.setData({ logoFlipped: next, logoAnimClass: next ? 'logo-toss-forward' : 'logo-toss-back' })
     this.logoAnimTimer = setTimeout(() => this.setData({ logoAnimClass: '' }), 680)
   },
+  showAdminResult(content) {
+    wx.showModal({
+      title: this.data.t.adminUnlocked,
+      content,
+      showCancel: false,
+      confirmText: '\u77e5\u9053\u5566'
+    })
+  },
   async logoTap() {
     this.playLogoAnimation()
     const now = Date.now()
     const count = now - this.data.lastLogoTap < 1800 ? this.data.logoTapCount + 1 : 1
     this.setData({ logoTapCount: count, lastLogoTap: now })
-    if (count > 6) {
+    if (count >= 6) {
       this.setData({ logoTapCount: 0 })
       try {
         if (!app.isLoggedIn()) {
@@ -74,7 +82,7 @@ Page({
         if (!api.hasBackend || !api.hasBackend() || (user.id || '').indexOf('local_') === 0) {
           wx.setStorageSync('adminUnlocked', true)
           wx.setStorageSync('localAdminUnlocked', true)
-          wx.showToast({ title: this.data.t.adminLocalUnlocked, icon: 'success' })
+          this.showAdminResult(this.data.t.adminLocalUnlocked)
           return
         }
         let result
@@ -91,7 +99,7 @@ Page({
           }
         }
         wx.setStorageSync('adminUnlocked', true)
-        wx.showToast({ title: result && result.alreadyAdmin ? this.data.t.adminAlready : this.data.t.adminUnlocked, icon: 'success' })
+        this.showAdminResult(result && result.alreadyAdmin ? this.data.t.adminAlready : this.data.t.adminUnlocked)
       } catch (err) {
         wx.showToast({ title: this.data.t.unlockFailed, icon: 'none' })
       }
