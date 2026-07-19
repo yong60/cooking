@@ -202,6 +202,19 @@ def ingredient_name(ingredient_id):
     return ingredient_id
 
 
+def public_user(user_id, db):
+    user = (db.get('users') or {}).get(user_id or '') or {}
+    return {
+        'id': user_id or '',
+        'nickName': user.get('nickName') or "\u5fae\u4fe1\u7528\u6237",
+        'avatarUrl': user.get('avatarUrl') or '',
+    }
+
+
+def order_log_id(prefix='order'):
+    return f'{prefix}_{datetime.now().strftime("%Y%m%d%H%M%S%f")}'
+
+
 def json_get(url, timeout=8):
     with urlopen(url, timeout=timeout) as resp:
         return json.loads(resp.read().decode('utf-8'))
@@ -468,24 +481,43 @@ class Handler(BaseHTTPRequestHandler):
             if parsed.path == '/api/submit/cart':
                 with LOCK:
                     db = read_db()
-                    state = get_couple(db, body.get('userId'))
+                    user_id = body.get('userId')
+                    state = get_couple(db, user_id)
                     cart = body.get('cart') if isinstance(body.get('cart'), list) else state.get('cart', [])
                     lines = '\n'.join([f"- {recipe_name(x.get('recipeId'))} x{x.get('quantity')}" for x in cart]) or '- ?'
                     content = f"\u4eca\u665a\u60f3\u5403\uff1a\n{lines}\n\n\u5907\u6ce8\uff1a" + str(body.get('remark') or "\u65e0") + "\n\u65f6\u95f4\uff1a" + now_iso()
                     notify = pushplus("\u80e1\u95f9\u53a8\u623f\uff1a\u70b9\u83dc\u63d0\u4ea4", content) if body.get('notifyEnabled', True) else {'skipped': True, 'reason': 'user disabled'}
-                    state.setdefault('submitLogs', []).insert(0, {'type': 'cart', 'cart': cart, 'remark': body.get('remark') or '', 'notify': notify, 'createdAt': now_iso()})
+                    state.setdefault('submitLogs', []).insert(0, {
+                        'id': order_log_id('cart'),
+                        'type': 'cart',
+                        'cart': cart,
+                        'remark': body.get('remark') or '',
+                        'notifyEnabled': body.get('notifyEnabled', True),
+                        'notify': notify,
+                        'submitter': public_user(user_id, db),
+                        'createdAt': now_iso()
+                    })
                     write_db(db)
                 return self.send_json(200, {'ok': True, 'notify': notify})
 
             if parsed.path == '/api/submit/ingredients':
                 with LOCK:
                     db = read_db()
-                    state = get_couple(db, body.get('userId'))
+                    user_id = body.get('userId')
+                    state = get_couple(db, user_id)
                     ids = body.get('selectedIngredientIds') if isinstance(body.get('selectedIngredientIds'), list) else state.get('selectedIngredientIds', [])
                     lines = '\n'.join([f'- {ingredient_name(x)}' for x in ids]) or '- ?'
                     content = f"\u4eca\u5929\u60f3\u7528\u8fd9\u4e9b\u98df\u6750\u505a\u996d\uff1a\n{lines}\n\n\u53ef\u4ee5\u53bb\u98df\u6750\u7ec4\u5408\u9875\u770b\u770b\u63a8\u8350\u83dc\u5355\u3002\n\u65f6\u95f4\uff1a" + now_iso()
                     notify = pushplus("\u80e1\u95f9\u53a8\u623f\uff1a\u98df\u6750\u63d0\u4ea4", content) if body.get('notifyEnabled', True) else {'skipped': True, 'reason': 'user disabled'}
-                    state.setdefault('submitLogs', []).insert(0, {'type': 'ingredients', 'selectedIngredientIds': ids, 'notify': notify, 'createdAt': now_iso()})
+                    state.setdefault('submitLogs', []).insert(0, {
+                        'id': order_log_id('ingredients'),
+                        'type': 'ingredients',
+                        'selectedIngredientIds': ids,
+                        'notifyEnabled': body.get('notifyEnabled', True),
+                        'notify': notify,
+                        'submitter': public_user(user_id, db),
+                        'createdAt': now_iso()
+                    })
                     write_db(db)
                 return self.send_json(200, {'ok': True, 'notify': notify})
 
@@ -569,6 +601,28 @@ class Handler(BaseHTTPRequestHandler):
         parsed = urlparse(self.path)
         try:
             body = self.read_body()
+            if parsed.path == '/api/orders':
+                user_id = body.get('userId') or ''
+                ids = body.get('ids') if isinstance(body.get('ids'), list) else []
+                clear_all = bool(body.get('clearAll'))
+                with LOCK:
+                    db = read_db()
+                    state = get_couple(db, user_id)
+                    logs = state.setdefault('submitLogs', [])
+                    before = len(logs)
+                    if clear_all:
+                        state['submitLogs'] = []
+                    else:
+                        ids_set = {str(x) for x in ids if str(x)}
+                        def keep_order(item):
+                            item_id = str(item.get('id') or '')
+                            legacy_id = 'remote_' + str(item.get('createdAt') or '')
+                            return item_id not in ids_set and legacy_id not in ids_set
+                        state['submitLogs'] = [item for item in logs if keep_order(item)]
+                    state['updatedAt'] = now_iso()
+                    write_db(db)
+                return self.send_json(200, {'ok': True, 'deleted': before - len(state.get('submitLogs', [])), 'logs': state.get('submitLogs', [])})
+
             if parsed.path == '/api/admin/recipes':
                 ok, user_id = require_admin(body=body)
                 if not ok:

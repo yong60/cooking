@@ -1,7 +1,16 @@
 <view class="container orders-page">
   <view class="head card">
-    <view class="title">{{t.title}}</view>
-    <view class="muted">{{t.hint}}</view>
+    <view class="head-top">
+      <view>
+        <view class="title">{{t.title}}</view>
+        <view class="muted">{{t.hint}}</view>
+      </view>
+      <button wx:if="{{logs.length}}" class="ghost-btn mode-btn" bindtap="toggleSelectMode">{{selectMode ? t.done : t.select}}</button>
+    </view>
+    <view wx:if="{{logs.length}}" class="head-actions">
+      <button wx:if="{{selectMode}}" class="primary-btn batch-btn" bindtap="deleteSelected">{{t.deleteSelected}} {{selectedIds.length}}</button>
+      <button class="ghost-btn clear-btn" bindtap="clearAll">{{t.clear}}</button>
+    </view>
   </view>
 
   <view wx:if="{{!logs.length}}" class="empty card">
@@ -12,16 +21,52 @@
     </view>
   </view>
 
-  <view wx:for="{{logs}}" wx:key="id" class="order-card card">
-    <view class="order-head">
-      <view class="order-type">{{item.title}}</view>
-      <view class="order-time">{{item.timeText}}</view>
+  <view wx:for="{{logs}}" wx:key="id" class="order-card card {{item.expanded ? 'expanded' : ''}}" data-id="{{item.id}}" bindtap="toggleDetail">
+    <view class="order-main">
+      <view wx:if="{{selectMode}}" class="select-dot {{item.checked ? 'checked' : ''}}" data-id="{{item.id}}" catchtap="toggleSelect">
+        <text wx:if="{{item.checked}}">OK</text>
+      </view>
+      <view class="order-body">
+        <view class="order-head">
+          <view class="order-type">{{item.title}}</view>
+          <view class="order-time">{{item.timeText}}</view>
+        </view>
+        <view class="order-items">{{item.itemText}}</view>
+        <view class="meta-row">
+          <text class="badge">{{item.notifyText}}</text>
+          <text wx:if="{{item.local}}" class="badge light">{{t.local}}</text>
+        </view>
+      </view>
     </view>
-    <view class="order-items">{{item.itemText}}</view>
-    <view wx:if="{{item.remark}}" class="muted remark">{{t.remark}}：{{item.remark}}</view>
-    <view class="meta-row">
-      <text class="badge">{{item.notifyText}}</text>
-      <text wx:if="{{item.local}}" class="badge light">{{t.local}}</text>
+
+    <view wx:if="{{item.expanded}}" class="detail-box">
+      <view class="detail-section">
+        <view class="detail-title">{{t.submitter}}</view>
+        <view class="user-line">
+          <image wx:if="{{item.submitterAvatar}}" class="user-avatar" src="{{item.submitterAvatar}}" mode="aspectFill" />
+          <view wx:else class="user-avatar text-avatar">H</view>
+          <view class="user-main">
+            <view class="user-name">{{item.submitterName}}</view>
+            <view wx:if="{{item.submitterId}}" class="muted user-id">{{t.userId}}: {{item.submitterId}}</view>
+          </view>
+        </view>
+      </view>
+
+      <view class="detail-section">
+        <view class="detail-title">{{t.orderContent}}</view>
+        <view wx:for="{{item.contentRows}}" wx:for-item="row" wx:key="name" class="content-row">
+          <text>{{row.name}}</text><text wx:if="{{row.desc}}" class="row-desc">{{row.desc}}</text>
+        </view>
+      </view>
+
+      <view wx:if="{{item.remark}}" class="detail-section">
+        <view class="detail-title">{{t.remark}}</view>
+        <view class="muted remark">{{item.remark}}</view>
+      </view>
+
+      <view class="detail-actions">
+        <button class="ghost-btn danger-btn" data-id="{{item.id}}" catchtap="deleteOne">{{t.delete}}</button>
+      </view>
     </view>
   </view>
 </view>

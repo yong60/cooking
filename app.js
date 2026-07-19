@@ -303,13 +303,18 @@ App({
         const recipe = this.getRecipeById(row.recipeId) || {}
         return { id: row.recipeId, name: recipe.name || row.recipeId, quantity: row.quantity || 1 }
       })
-      return { id: `log_${createdAt}`, type, items, remark: payload.remark || '', notifyEnabled: payload.notifyEnabled !== false, createdAt }
+      return { id: `log_${createdAt}`, type, items, remark: payload.remark || '', notifyEnabled: payload.notifyEnabled !== false, submitter: this.publicCurrentUser(), createdAt }
     }
     const ingredients = (payload.selectedIngredientIds || []).map(id => {
       const item = this.getIngredientById(id) || {}
       return { id, name: item.name || id }
     })
-    return { id: `log_${createdAt}`, type, ingredients, notifyEnabled: payload.notifyEnabled !== false, createdAt }
+    return { id: `log_${createdAt}`, type, ingredients, notifyEnabled: payload.notifyEnabled !== false, submitter: this.publicCurrentUser(), createdAt }
+  },
+
+  publicCurrentUser() {
+    const user = this.globalData.user || {}
+    return { id: user.id || '', nickName: user.nickName || "\u5fae\u4fe1\u7528\u6237", avatarUrl: user.avatarUrl || '' }
   },
 
   saveSubmitLog(log) {
@@ -336,6 +341,8 @@ App({
       }),
       remark: item.remark || '',
       notify: item.notify,
+      notifyEnabled: item.notifyEnabled !== false,
+      submitter: item.submitter || {},
       local: false,
       createdAt: item.createdAt || ''
     }))
@@ -347,6 +354,30 @@ App({
       seen.add(key)
       return true
     }).slice(0, 100)
+  },
+
+  async loadSubmitLogs() {
+    const userId = this.globalData.user && this.globalData.user.id
+    try {
+      const result = await api.getOrders(userId)
+      this.globalData.state = { ...this.globalData.state, submitLogs: result.logs || [] }
+      this.saveLocalState()
+    } catch (err) {}
+    return this.getSubmitLogs()
+  },
+
+  async deleteSubmitLogs(ids = [], clearAll = false) {
+    const idSet = new Set(ids || [])
+    const local = wx.getStorageSync('localSubmitLogs') || []
+    wx.setStorageSync('localSubmitLogs', clearAll ? [] : local.filter(item => !idSet.has(item.id)))
+    const remote = (this.globalData.state && this.globalData.state.submitLogs) || []
+    this.globalData.state = { ...this.globalData.state, submitLogs: clearAll ? [] : remote.filter(item => !idSet.has(item.id)) }
+    this.saveLocalState()
+    try {
+      await api.deleteOrders({ userId: this.globalData.user && this.globalData.user.id, ids, clearAll })
+      await this.loadSubmitLogs()
+    } catch (err) {}
+    return this.getSubmitLogs()
   },
 
   async recommend(options = {}) {
