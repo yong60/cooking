@@ -7,7 +7,7 @@
   <block wx:else>
     <view class="tabs card">
       <view class="tab {{activeTab == 'recipes' ? 'active' : ''}}" data-tab="recipes" bindtap="switchTab">{{t.recipes}}</view>
-      <view class="tab {{activeTab == 'ingredients' ? 'active' : ''}}" data-tab="ingredients" bindtap="switchTab">{{t.ingredients}}</view>
+      <view class="tab {{activeTab == 'ingredients' ? 'active' : ''}}" data-tab="ingredients" bindtap="switchTab">{{t.ingredients}}</view><view class="tab {{activeTab == 'fatloss' ? 'active' : ''}}" data-tab="fatloss" bindtap="switchTab">{{t.fatloss}}</view>
     </view>
 
     <view wx:if="{{activeTab == 'recipes'}}">
@@ -89,5 +89,19 @@
         </view>
       </block>
     </view>
+
+    <view wx:if="{{activeTab == 'fatloss'}}" class="fatloss-admin">
+      <view wx:for="{{fatLossGroups}}" wx:for-index="groupIndex" wx:key="id" class="form-card card">
+        <view class="form-title">{{item.name}}</view>
+        <view wx:for="{{item.items}}" wx:for-item="food" wx:for-index="foodIndex" wx:key="id" class="fatloss-edit-row">
+          <input class="input fatloss-input" placeholder="{{t.name}}" value="{{food.name}}" data-group="{{groupIndex}}" data-index="{{foodIndex}}" data-field="name" bindinput="onFatLossInput" />
+          <input class="input fatloss-input" placeholder="{{t.desc}}" value="{{food.amount}}" data-group="{{groupIndex}}" data-index="{{foodIndex}}" data-field="amount" bindinput="onFatLossInput" />
+          <view class="mini-btn danger fatloss-del" data-group="{{groupIndex}}" data-index="{{foodIndex}}" bindtap="deleteFatLossItem">{{t.del}}</view>
+        </view>
+        <button class="ghost-btn add-fatloss-btn" data-group="{{groupIndex}}" bindtap="addFatLossItem">{{t.addFatLoss}}</button>
+      </view>
+      <button class="primary-btn add-btn" bindtap="saveFatLossGroups">{{t.save}}</button>
+    </view>
+
   </block>
 </view>

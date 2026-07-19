@@ -17,12 +17,12 @@ App({
     user: null,
     recipes: mock.recipes,
     ingredients: mock.ingredients,
-    state: { cart: [], selectedIngredientIds: [] }
+    state: { cart: [], selectedIngredientIds: [], selectedIngredientQuantities: {} }
   },
 
   onLaunch() {
     this.globalData.user = wx.getStorageSync('user') || null
-    this.globalData.state = wx.getStorageSync('sharedState') || { cart: [], selectedIngredientIds: [] }
+    this.globalData.state = wx.getStorageSync('sharedState') || { cart: [], selectedIngredientIds: [], selectedIngredientQuantities: {} }
   },
 
   isLoggedIn() {
@@ -94,14 +94,25 @@ App({
     return this.globalData.user
   },
 
+
+  withCustomRecipes(recipes = []) {
+    const custom = wx.getStorageSync('customRecipes') || []
+    const seen = new Set()
+    return [...custom, ...(recipes || [])].filter(item => {
+      if (!item || !item.id || seen.has(item.id)) return false
+      seen.add(item.id)
+      return true
+    })
+  },
+
   async loadCatalog() {
     try {
       const [recipeRes, ingredientRes] = await Promise.all([api.getRecipes(), api.getIngredients()])
-      this.globalData.recipes = recipeRes.recipes || mock.recipes
+      this.globalData.recipes = this.withCustomRecipes(recipeRes.recipes || mock.recipes)
       this.globalData.ingredients = ingredientRes.ingredients || mock.ingredients
     } catch (err) {
       const localCatalog = wx.getStorageSync('localCatalog') || {}
-      this.globalData.recipes = localCatalog.recipes || mock.recipes
+      this.globalData.recipes = this.withCustomRecipes(localCatalog.recipes || mock.recipes)
       this.globalData.ingredients = localCatalog.ingredients || mock.ingredients
     }
     return { recipes: this.globalData.recipes, ingredients: this.globalData.ingredients }
@@ -182,13 +193,8 @@ App({
     const exists = this.globalData.recipes.find(row => row.id === item.id)
     if (!exists) {
       this.globalData.recipes = [item, ...(this.globalData.recipes || [])]
-      const localCatalog = wx.getStorageSync('localCatalog') || {}
-      const recipes = localCatalog.recipes || this.globalData.recipes
-      wx.setStorageSync('localCatalog', {
-        ...localCatalog,
-        recipes: exists ? recipes : [item, ...recipes.filter(row => row.id !== item.id)],
-        ingredients: localCatalog.ingredients || this.globalData.ingredients || []
-      })
+      const custom = wx.getStorageSync('customRecipes') || []
+      wx.setStorageSync('customRecipes', [item, ...custom.filter(row => row.id !== item.id)].slice(0, 50))
     }
     return this.addToCart(item.id)
   },
@@ -208,16 +214,36 @@ App({
     this.saveLocalState()
   },
 
-  getSelectedIngredients() {
-    return (this.globalData.state.selectedIngredientIds || []).map(id => this.getIngredientById(id)).filter(Boolean)
+  getIngredientQuantities() {
+    const state = this.globalData.state || {}
+    const map = { ...(state.selectedIngredientQuantities || {}) }
+    ;(state.selectedIngredientIds || []).forEach(id => { if (!map[id]) map[id] = 1 })
+    return map
   },
 
-  async updateIngredientSelection(ids) {
-    const selectedIngredientIds = unique(ids)
-    this.globalData.state = { ...this.globalData.state, selectedIngredientIds }
+  getSelectedIngredients() {
+    const quantities = this.getIngredientQuantities()
+    return Object.keys(quantities).map(id => {
+      const item = this.getIngredientById(id)
+      return item ? { ...item, quantity: quantities[id] || 1 } : null
+    }).filter(Boolean)
+  },
+
+  async updateIngredientSelection(idsOrQuantities) {
+    let selectedIngredientQuantities = {}
+    if (Array.isArray(idsOrQuantities)) {
+      idsOrQuantities.forEach(id => { if (id) selectedIngredientQuantities[id] = 1 })
+    } else {
+      Object.keys(idsOrQuantities || {}).forEach(id => {
+        const qty = Math.max(0, Number(idsOrQuantities[id] || 0))
+        if (id && qty > 0) selectedIngredientQuantities[id] = qty
+      })
+    }
+    const selectedIngredientIds = Object.keys(selectedIngredientQuantities)
+    this.globalData.state = { ...this.globalData.state, selectedIngredientIds, selectedIngredientQuantities }
     this.saveLocalState()
     try {
-      const result = await api.updateIngredientSelection({ userId: this.globalData.user && this.globalData.user.id, selectedIngredientIds })
+      const result = await api.updateIngredientSelection({ userId: this.globalData.user && this.globalData.user.id, selectedIngredientIds, selectedIngredientQuantities })
       if (result.state) this.globalData.state = result.state
     } catch (err) {}
     this.saveLocalState()
@@ -257,6 +283,7 @@ App({
     const payload = {
       userId: this.globalData.user && this.globalData.user.id,
       selectedIngredientIds,
+      selectedIngredientQuantities: this.getIngredientQuantities(),
       ...extra
     }
     const log = this.makeSubmitLog('ingredients', payload)
@@ -291,7 +318,8 @@ App({
   ingredientsNotifyContent(payload = {}) {
     const lines = (payload.selectedIngredientIds || []).map(id => {
       const item = this.getIngredientById(id) || {}
-      return `- ${item.name || id}`
+      const qty = (payload.selectedIngredientQuantities || {})[id] || 1
+      return `- ${item.name || id} x${qty}`
     }).join('\n') || '- 暂无'
     return `今天想用这些食材做饭：\n${lines}`
   },
@@ -327,7 +355,7 @@ App({
 
   getSubmitLogs() {
     const remote = (this.globalData.state && this.globalData.state.submitLogs) || []
-    const local = wx.getStorageSync('localSubmitLogs') || []
+    const local = (wx.getStorageSync('localSubmitLogs') || []).map((item, index) => ({ ...item, id: item.id || `local_${item.createdAt || index}` }))
     const normalizedRemote = remote.map((item, index) => ({
       id: item.id || `remote_${item.createdAt || index}`,
       type: item.type,
@@ -337,7 +365,7 @@ App({
       }),
       ingredients: (item.selectedIngredientIds || []).map(id => {
         const ingredient = this.getIngredientById(id) || {}
-        return { id, name: ingredient.name || id }
+        return { id, name: ingredient.name || id, quantity: ((item.selectedIngredientQuantities || {})[id]) || 1 }
       }),
       remark: item.remark || '',
       notify: item.notify,

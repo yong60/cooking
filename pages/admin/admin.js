@@ -26,6 +26,8 @@ const text = {
   noPermission: '\u60a8\u8fd8\u6ca1\u6709\u8be5\u90e8\u5206\u6743\u9650\uff0c\u8bf7\u8054\u7cfb\u7ba1\u7406\u5458\u83b7\u53d6\u76f8\u5173\u6743\u9650\u54e6~',
   recipes: '\u83dc\u5355\u5217\u8868',
   ingredients: '\u98df\u6750\u5217\u8868',
+  fatloss: '\u51cf\u8102\u83dc\u5355',
+  addFatLoss: '\u65b0\u589e\u9009\u9879',
   addRecipe: '\u65b0\u589e\u83dc\u54c1',
   addIngredient: '\u65b0\u589e\u98df\u6750',
   edit: '\u7f16\u8f91',
@@ -122,7 +124,8 @@ Page({
     recipeAdvanced: false,
     ingredientAdvanced: false,
     recipeForm: emptyRecipe(),
-    ingredientForm: emptyIngredient()
+    ingredientForm: emptyIngredient(),
+    fatLossGroups: []
   },
 
   async onShow() {
@@ -167,6 +170,7 @@ Page({
     app.globalData.recipes = recipes
     app.globalData.ingredients = ingredients
     this.setData({ isAdmin: true, recipes, ingredients, loading: false })
+    this.loadFatLossGroups()
     this.setRecipeForm(this.data.recipeForm)
   },
   saveLocalCatalog(recipes = this.data.recipes, ingredients = this.data.ingredients) {
@@ -218,7 +222,46 @@ Page({
     }
   },
 
-  switchTab(event) { this.setData({ activeTab: event.currentTarget.dataset.tab, editingType: '' }) },
+  switchTab(event) { this.setData({ activeTab: event.currentTarget.dataset.tab, editingType: '' }); if (event.currentTarget.dataset.tab === 'fatloss') this.loadFatLossGroups() },
+
+  defaultFatLossGroups() {
+    return [
+      { id: 'carb', name: '\u78b3\u6c34', limit: 1, items: [{ id: 'brown_rice', name: '\u7cd9\u7c73\u996d', amount: '\u534a\u7897' }, { id: 'corn', name: '\u7389\u7c73', amount: '\u534a\u6839' }] },
+      { id: 'protein', name: '\u86cb\u767d\u8d28', limit: 2, items: [{ id: 'chicken', name: '\u9e21\u80f8\u8089', amount: '\u4e00\u638c\u5fc3' }, { id: 'egg', name: '\u9e21\u86cb', amount: '\u4e00\u5230\u4e24\u4e2a' }] },
+      { id: 'veg', name: '\u852c\u83dc', limit: 3, items: [{ id: 'broccoli', name: '\u897f\u5170\u82b1', amount: '\u4e00\u5927\u7897' }, { id: 'cucumber', name: '\u9ec4\u74dc', amount: '\u4e00\u6839' }] },
+      { id: 'extra', name: '\u642d\u914d', limit: 2, items: [{ id: 'nuts', name: '\u575a\u679c', amount: '\u4e00\u5c0f\u628a' }, { id: 'yogurt', name: '\u65e0\u7cd6\u9178\u5976', amount: '\u4e00\u676f' }] }
+    ]
+  },
+  loadFatLossGroups() {
+    this.setData({ fatLossGroups: wx.getStorageSync('fatLossGroups') || this.defaultFatLossGroups() })
+  },
+  saveFatLossGroups() {
+    wx.setStorageSync('fatLossGroups', this.data.fatLossGroups || [])
+    wx.showToast({ title: this.data.t.saved, icon: 'success' })
+  },
+  onFatLossInput(event) {
+    const groupIndex = Number(event.currentTarget.dataset.group)
+    const itemIndex = Number(event.currentTarget.dataset.index)
+    const field = event.currentTarget.dataset.field
+    const fatLossGroups = JSON.parse(JSON.stringify(this.data.fatLossGroups || []))
+    fatLossGroups[groupIndex].items[itemIndex][field] = event.detail.value
+    this.setData({ fatLossGroups })
+  },
+  addFatLossItem(event) {
+    const groupIndex = Number(event.currentTarget.dataset.group)
+    const fatLossGroups = JSON.parse(JSON.stringify(this.data.fatLossGroups || []))
+    const group = fatLossGroups[groupIndex]
+    group.items.push({ id: `${group.id}_${Date.now()}`, name: '', amount: '' })
+    this.setData({ fatLossGroups })
+  },
+  deleteFatLossItem(event) {
+    const groupIndex = Number(event.currentTarget.dataset.group)
+    const itemIndex = Number(event.currentTarget.dataset.index)
+    const fatLossGroups = JSON.parse(JSON.stringify(this.data.fatLossGroups || []))
+    fatLossGroups[groupIndex].items.splice(itemIndex, 1)
+    this.setData({ fatLossGroups })
+  },
+
   startAddRecipe() { this.setData({ editingType: 'recipe', recipeAdvanced: false }); this.setRecipeForm(emptyRecipe()) },
   startAddIngredient() { this.setData({ editingType: 'ingredient', ingredientAdvanced: false, ingredientForm: emptyIngredient() }) },
   editRecipe(event) {

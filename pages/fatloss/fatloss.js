@@ -68,8 +68,14 @@ Page({
     selectedCount: 0,
     plan: []
   },
-  onShow() { this.setTabBar() },
+  onShow() { this.setTabBar(); this.loadGroups() },
   setTabBar() { const tabBar = typeof this.getTabBar === 'function' && this.getTabBar(); if (tabBar) tabBar.setData({ selected: 2 }) },
+  loadGroups() {
+    const saved = wx.getStorageSync('fatLossGroups')
+    if (saved && saved.length) {
+      this.setData({ groups: saved.map(group => ({ ...group, items: (group.items || []).map(item => ({ ...item, selected: false })) })), selectedCount: 0, plan: [] })
+    }
+  },
   toggleItem(event) {
     const groupId = event.currentTarget.dataset.group
     const id = event.currentTarget.dataset.id
@@ -124,10 +130,16 @@ Page({
     if (!this.data.plan.length) return
     const name = '\u81ea\u9009\u51cf\u8102\u9910\u5957\u9910'
     const desc = this.data.plan.join('\uff1b')
+    const selected = this.selectedByGroup()
+    const ingredients = []
+    ;['carb', 'protein', 'veg', 'extra'].forEach(key => {
+      ;(selected[key] || []).forEach(item => ingredients.push(item.id))
+    })
     await app.addCustomRecipeToCart({
       id: `fatloss_${Date.now()}`,
       name,
       desc,
+      ingredients,
       tags: ['\u51cf\u8102', '\u81ea\u9009'],
       cover: '\uD83E\uDD57'
     })

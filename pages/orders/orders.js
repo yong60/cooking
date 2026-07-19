@@ -60,7 +60,7 @@ Page({
     const isIngredients = item.type === 'ingredients'
     const submitter = item.submitter || {}
     const contentRows = isIngredients
-      ? (item.ingredients || []).map(x => ({ name: x.name, desc: '' }))
+      ? (item.ingredients || []).map(x => ({ name: x.name, desc: `x${x.quantity || 1}` }))
       : (item.items || []).map(x => ({ name: x.name, desc: `x${x.quantity || 1}` }))
     return {
       ...item,

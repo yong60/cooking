@@ -121,7 +121,7 @@ def now_iso():
 
 
 def empty_state():
-    return {'cart': [], 'selectedIngredientIds': [], 'submitLogs': []}
+    return {'cart': [], 'selectedIngredientIds': [], 'selectedIngredientQuantities': {}, 'submitLogs': []}
 
 
 def single_couple_id(user_id):
@@ -157,6 +157,15 @@ def merge_states(*states):
         logs.extend(state.get('submitLogs', [])[:20])
     merged['cart'] = [{'recipeId': rid, 'quantity': qty} for rid, qty in cart.items()]
     merged['selectedIngredientIds'] = selected
+    merged['selectedIngredientQuantities'] = {}
+    for iid in selected:
+        for state in states:
+            qty = ((state or {}).get('selectedIngredientQuantities') or {}).get(iid)
+            if qty:
+                merged['selectedIngredientQuantities'][iid] = max(int(qty), int(merged['selectedIngredientQuantities'].get(iid) or 0))
+    for iid in selected:
+        if iid not in merged['selectedIngredientQuantities']:
+            merged['selectedIngredientQuantities'][iid] = 1
     merged['submitLogs'] = logs[:50]
     merged['updatedAt'] = now_iso()
     return merged
@@ -506,13 +515,15 @@ class Handler(BaseHTTPRequestHandler):
                     user_id = body.get('userId')
                     state = get_couple(db, user_id)
                     ids = body.get('selectedIngredientIds') if isinstance(body.get('selectedIngredientIds'), list) else state.get('selectedIngredientIds', [])
-                    lines = '\n'.join([f'- {ingredient_name(x)}' for x in ids]) or '- ?'
+                    quantities = body.get('selectedIngredientQuantities') if isinstance(body.get('selectedIngredientQuantities'), dict) else state.get('selectedIngredientQuantities', {})
+                    lines = '\n'.join([f'- {ingredient_name(x)} x{quantities.get(x) or 1}' for x in ids]) or '- ?'
                     content = f"\u4eca\u5929\u60f3\u7528\u8fd9\u4e9b\u98df\u6750\u505a\u996d\uff1a\n{lines}\n\n\u53ef\u4ee5\u53bb\u98df\u6750\u7ec4\u5408\u9875\u770b\u770b\u63a8\u8350\u83dc\u5355\u3002\n\u65f6\u95f4\uff1a" + now_iso()
                     notify = pushplus("\u80e1\u95f9\u53a8\u623f\uff1a\u98df\u6750\u63d0\u4ea4", content) if body.get('notifyEnabled', True) else {'skipped': True, 'reason': 'user disabled'}
                     state.setdefault('submitLogs', []).insert(0, {
                         'id': order_log_id('ingredients'),
                         'type': 'ingredients',
                         'selectedIngredientIds': ids,
+                        'selectedIngredientQuantities': quantities,
                         'notifyEnabled': body.get('notifyEnabled', True),
                         'notify': notify,
                         'submitter': public_user(user_id, db),
@@ -584,10 +595,20 @@ class Handler(BaseHTTPRequestHandler):
             if parsed.path == '/api/ingredient-selection':
                 ids = body.get('selectedIngredientIds') if isinstance(body.get('selectedIngredientIds'), list) else []
                 ids = list(dict.fromkeys(ids))
+                quantities = body.get('selectedIngredientQuantities') if isinstance(body.get('selectedIngredientQuantities'), dict) else {}
+                clean_quantities = {}
+                for iid in ids:
+                    try:
+                        qty = int(quantities.get(iid) or 1)
+                    except Exception:
+                        qty = 1
+                    if qty > 0:
+                        clean_quantities[iid] = qty
                 with LOCK:
                     db = read_db()
                     state = get_couple(db, body.get('userId'))
                     state['selectedIngredientIds'] = ids
+                    state['selectedIngredientQuantities'] = clean_quantities
                     state['updatedAt'] = now_iso()
                     write_db(db)
                 return self.send_json(200, {'state': state})
